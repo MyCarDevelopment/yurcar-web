@@ -1,13 +1,17 @@
+# MIME types для Vite assets
 [[headers]]
-  for = "assets/*.js"
+  for = "/assets/*.js"
   [headers.values]
     Content-Type = "application/javascript; charset=utf-8"
+    Cross-Origin-Opener-Policy = "same-origin"
+    Cross-Origin-Embedder-Policy = "require-corp"
 
 [[headers]]  
-  for = "assets/*.css"
+  for = "/assets/*.css"
   [headers.values]
     Content-Type = "text/css; charset=utf-8"
 
+# SPA роутинг
 [[redirects]]
   from = "/*"
   to = "/index.html"
