@@ -1,11 +1,14 @@
 export const STORAGE_KEY = 'yurcar.web.v1';
 export const emptyData = () => ({version:1,vehicles:[],activeId:null,checks:[]});
 export function validate(data) {
- if (!data || data.version !== 1 || !Array.isArray(data.vehicles) || data.vehicles.length > 10 || !Array.isArray(data.checks) || data.checks.some(x => !Number.isInteger(x) || x < 0 || x > 4)) throw Error('Неверный формат данных');
+ if (!data || data.version !== 1 || !Array.isArray(data.vehicles) || data.vehicles.length > 10 || !Array.isArray(data.checks) || new Set(data.checks).size!==data.checks.length || data.checks.some(x => !Number.isInteger(x) || x < 0 || x >= (data.tripItems?.length??5))) throw Error('Неверный формат данных');
+ if(data.tripItems!==undefined && (!Array.isArray(data.tripItems)||data.tripItems.length>30||data.tripItems.some(x=>typeof x!=='string'||!x.trim()||x.length>100)))throw Error('Проверьте список перед поездкой');
  const ids = new Set();
  for (const v of data.vehicles) {
   if (!v || typeof v.id !== 'string' || ids.has(v.id) || typeof v.brand !== 'string' || !v.brand.trim() || v.brand.length > 60 || typeof v.model !== 'string' || !v.model.trim() || v.model.length > 60) throw Error('Проверьте автомобили');
   ids.add(v.id);
+  for(const key of ['generation','engine'])if(v[key]!==undefined&&(typeof v[key]!=='string'||v[key].length>100))throw Error('Проверьте паспорт автомобиля');
+  for(const [key,values] of Object.entries({fuel:['UNKNOWN','PETROL','DIESEL','HYBRID','ELECTRIC','GAS'],gearbox:['UNKNOWN','MANUAL','AUTO','CVT','ROBOT','REDUCTION'],driving:['MIXED','SHORT','HIGHWAY','HEAVY']}))if(v[key]!==undefined&&!values.includes(v[key]))throw Error('Проверьте характеристики автомобиля');
   if (v.mileage !== null && (!Number.isInteger(v.mileage) || v.mileage < 0 || v.mileage > 9999999)) throw Error('Неверный пробег');
   if (v.year !== null && (!Number.isInteger(v.year) || v.year < 1900 || v.year > new Date().getFullYear()+1)) throw Error('Неверный год');
   for (const key of ['records','tasks']) {
