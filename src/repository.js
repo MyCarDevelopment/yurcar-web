@@ -1,5 +1,6 @@
+import {checklist} from './data.js';
 export const STORAGE_KEY = 'yurcar.web.v1';
-export const emptyData = () => ({version:1,vehicles:[],activeId:null,checks:[]});
+export const emptyData = () => ({version:1,vehicles:[],activeId:null,checks:[],tripItems:[...checklist]});
 export function validate(data) {
  if (!data || data.version !== 1 || !Array.isArray(data.vehicles) || data.vehicles.length > 10 || !Array.isArray(data.checks) || new Set(data.checks).size!==data.checks.length || data.checks.some(x => !Number.isInteger(x) || x < 0 || x >= (data.tripItems?.length??5))) throw Error('Неверный формат данных');
  if(data.tripItems!==undefined && (!Array.isArray(data.tripItems)||data.tripItems.length>30||data.tripItems.some(x=>typeof x!=='string'||!x.trim()||x.length>100)))throw Error('Проверьте список перед поездкой');
@@ -28,7 +29,7 @@ export function validate(data) {
 }
 export class LocalRepository {
  constructor(storage) { this.storage=storage; }
- async load() { const raw=this.storage.getItem(STORAGE_KEY); return raw ? validate(JSON.parse(raw)) : emptyData(); }
+ async load() { const raw=this.storage.getItem(STORAGE_KEY); if(!raw)return emptyData();const value=JSON.parse(raw);if(value&&value.version===1&&value.tripItems===undefined)value.tripItems=['Документы и маршрут','Состояние шин и давление','Свет, стёкла и зеркала','Уровни жидкостей по руководству','Заряд телефона и необходимые вещи'];return validate(value); }
  async save(data) { validate(data); this.storage.setItem(STORAGE_KEY,JSON.stringify(data)); }
 }
 // Future API adapter must implement the same load/save interface; no fake synchronization.

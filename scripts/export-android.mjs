@@ -5,7 +5,8 @@ const base=join(android,'app/src/main/java/com/example/mycar');
 const temp=resolve('.content-export');await mkdir(temp,{recursive:true});
 const paths=['ui/guide/GuideContent.kt','ui/guide/ProvidedGuideContent.kt','ui/guide/GuideCollectionContent.kt','ui/guide/ArticleServiceLinks.kt','ui/atlas/AtlasContent.kt','ui/atlas/ExpandedAtlasContent.kt','ui/garage/GarageModels.kt','ui/garage/GarageCatalog.kt','ui/garage/GarageAdvice.kt','ui/services/ServiceCatalog.kt','ui/Story.kt','ui/home/CityStories.kt','ui/map/MapPlaces.kt','ui/sos/SosContent.kt'];
 const resources=new Map();
-for(const name of ['home_guide_art_v1','home_services_art_v1','home_products_art_v1','home_fines_art_v1','home_community_art_v1','launcher_mark_v1'])resources.set(name,resources.size+1);
+const homeAssetNames=['home_guide_art_v1','home_services_art_v1','home_products_art_v1','home_fines_art_v1','home_community_art_v1','launcher_mark_v1','guide_anatomy_art_v1','polish_symptoms_art_v1','polish_location_art_v1','guide_diagnosis_art_v1','polish_urgency_art_v1','guide_care_art_v1','guide_tips_art_v1'];
+for(const name of homeAssetNames)resources.set(name,resources.size+1);
 for(const path of paths){const s=await readFile(join(base,path),'utf8');for(const m of s.matchAll(/R\.drawable\.(\w+)/g))if(!resources.has(m[1]))resources.set(m[1],resources.size+1);await writeFile(join(temp,basename(path)),s);}
 let indicators=await readFile(join(base,'ui/indicators/IndicatorsScreen.kt'),'utf8');indicators='package com.example.mycar.ui.indicators\nimport com.example.mycar.R\n'+indicators.slice(indicators.indexOf('data class CategoryItem'),indicators.indexOf('@Composable')).replace('private val indicatorCategories','val indicatorCategories');
 for(const m of indicators.matchAll(/R\.drawable\.(\w+)/g))if(!resources.has(m[1]))resources.set(m[1],resources.size+1);
@@ -43,7 +44,7 @@ if(process.argv.includes('--assets')){
  const assets=new Map();for(const dir of folders)for(const file of await readdir(join(android,'app/src/main/res',dir)))if(!assets.has(basename(file,extname(file))))assets.set(basename(file,extname(file)),join(android,'app/src/main/res',dir,file));
  const payload=JSON.parse(await readFile(join(temp,'content.json'),'utf8'));const used=new Set();
  function collect(v){if(!v||typeof v!=='object')return;for(const [k,x]of Object.entries(v)){if(['photo','image','imageRes','contentImageRes','coverImageRes','iconRes'].includes(k)&&resources.has([...resources].find(([,i])=>i===x)?.[0]))used.add(x);else collect(x);}}collect(payload);
- for(const name of ['home_guide_art_v1','home_services_art_v1','home_products_art_v1','home_fines_art_v1','home_community_art_v1','launcher_mark_v1'])used.add(resources.get(name));
+ for(const name of homeAssetNames)used.add(resources.get(name));
  const imageMap={};await mkdir('assets/android',{recursive:true});const bmp=[];
  for(const id of used){const name=[...resources].find(([,i])=>i===id)[0],file=assets.get(name);if(!file)throw Error('Missing Android asset '+name);const ext=extname(file);if(ext==='.xml'){continue;}if(ext==='.bmp'){bmp.push({source:file,target:resolve('assets/android',name+'.png')});imageMap[id]='./assets/android/'+name+'.png';}else{await copyFile(file,join('assets/android',name+ext));imageMap[id]='./assets/android/'+name+ext;}}
  await writeFile(join(temp,'bmp.json'),JSON.stringify(bmp));await writeFile('src/android-content.js','// Generated from Android source; run scripts/export-android.ps1 to refresh.\nexport const content = '+JSON.stringify({...payload,images:imageMap})+';\n');
