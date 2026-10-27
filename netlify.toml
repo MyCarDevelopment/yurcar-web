@@ -1,19 +1,13 @@
-# MIME types для Vite assets
+[build]
+  command = "npm run build"
+  publish = "dist"
+
 [[headers]]
-  for = "/assets/*.js"
+  for = "/sw.js"
   [headers.values]
-    Content-Type = "application/javascript; charset=utf-8"
-    Cross-Origin-Opener-Policy = "same-origin"
-    Cross-Origin-Embedder-Policy = "require-corp"
+    Cache-Control = "no-cache"
 
-[[headers]]  
-  for = "/assets/*.css"
+[[headers]]
+  for = "/index.html"
   [headers.values]
-    Content-Type = "text/css; charset=utf-8"
-
-# SPA роутинг
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-  force = true
+    Cache-Control = "no-cache"

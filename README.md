@@ -1,16 +1,31 @@
-# React + Vite
+# Юркар Web / PWA
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Самостоятельный веб-проект без зависимостей от Gradle и Android. Node.js 20+ используется только для локального сервера, тестов и сборки. В браузере — ES modules, CSS, service worker. Можно вынести всю папку в отдельный репозиторий без Android-файлов.
 
-Currently, two official plugins are available:
+## Запуск
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Из этой папки: `npm run dev`, затем http://127.0.0.1:4173. Проверка: `npm test`. Сборка: `npm run build`, результат — `dist/`.
 
-## React Compiler
+## Реализовано
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Адаптивный интерфейс и светлая/тёмная тема; до 10 автомобилей; редактирование и удаление; история обслуживания и планы с датой/пробегом, выполнение плана; справочник с поиском; переходы в поиск услуг на Яндекс Картах; чек-лист поездки; JSON-копии и восстановление; установка PWA и офлайн-оболочка после первого открытия. Записи ограничены 200 на тип и автомобиль. Повреждённое хранилище не затирается автоматически.
 
-## Expanding the ESLint configuration
+Данные сохраняются только в браузере. Авторизации, синхронизации с Android, онлайн-записи, платежей, рекламного кабинета и push-уведомлений пока нет. Это первая рабочая основа, не полный перенос всех разделов Android. Год и пробег необязательны; справочник содержит четыре базовых материала. Импорт JSON предназначен для веб-копий, не для прямого чтения Android SharedPreferences.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Отдельный репозиторий
+
+Репозиторий: `MyCarDevelopment/yurcar-web`. Предыдущий учебный React/Vite-проект сохранён целиком в `legacy-learning/` при переносе через GitHub, включая исходники и прежние настройки Netlify. Он не включается в сборку PWA. Android-проект публиковать в этот репозиторий не нужно.
+
+В `.github/workflows/pages.yml` настроены тесты, сборка и публикация `dist` при обновлении main. В GitHub откройте Settings → Pages → Source → GitHub Actions. После включения при необходимости повторите запуск workflow на вкладке Actions. Для pull request выполняются только проверки. Домен yurcar.ru добавляется отдельно в Pages после первой успешной публикации, затем настраивается DNS; наличие workflow не означает, что домен уже подключён.
+
+## Публикация и yurcar.ru
+
+Проект переносим между хостингами: загрузите содержимое `dist/` в корень статического сайта. Сборочная команда `npm run build`, каталог публикации `dist`. Сервер должен отдавать `.webmanifest` как `application/manifest+json`, JS как JavaScript, а `sw.js` и `index.html` — с проверкой обновлений (`Cache-Control: no-cache`). HTTPS обязателен для PWA вне localhost. Приложение поддерживает размещение в подпапке и hash-навигацию без SPA rewrite.
+
+Регистрация домена в REG.RU не обязывает размещать там сайт. Выберите хостинг с HTTPS для своего домена; конкретные тарифы и доступность здесь не проверены. После добавления `yurcar.ru` в панели выбранного хостинга внесите в DNS REG.RU именно выданные хостингом записи. Не угадывайте IP и не меняйте MX/TXT почты. Для www настройте адрес и перенаправление по инструкции хостинга. Для будущего API можно использовать `api.yurcar.ru` или прокси `/api`. DNS и публичная публикация в этой задаче не выполнялись: хостинг ещё не выбран.
+
+## Общий backend
+
+См. [docs/backend.md](docs/backend.md). Интерфейс репозитория отделён от UI в `src/repository.js`: LocalRepository используется сейчас, ApiRepository — заготовка для будущего сервера. Не переключать адаптер до реализации API и авторизации. Секреты и ключи серверных сервисов нельзя включать в статический frontend.
+
+Для обновления оболочки изменяйте версию CACHE в `sw.js`; новый worker активируется после закрытия старых вкладок. В service worker кэшируются только перечисленные статические ресурсы, не ответы API и не пользовательские JSON-копии.
