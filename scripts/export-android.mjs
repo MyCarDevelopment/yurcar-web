@@ -4,7 +4,7 @@ import {createHash} from 'node:crypto';
 const android=resolve(process.argv[2]||'..');
 const base=join(android,'app/src/main/java/com/example/mycar');
 const temp=resolve('.content-export');await mkdir(temp,{recursive:true});
-const paths=['ui/guide/GuideContent.kt','ui/guide/ProvidedGuideContent.kt','ui/guide/GuideCollectionContent.kt','ui/guide/ArticleServiceLinks.kt','ui/atlas/AtlasContent.kt','ui/atlas/ExpandedAtlasContent.kt','ui/atlas/AtlasCarModel.kt','ui/garage/GarageModels.kt','ui/garage/GarageCatalog.kt','ui/garage/GarageAdvice.kt','ui/services/ServiceCatalog.kt','ui/services/ServiceCategoryArt.kt','ui/entry/EntryPolicy.kt','ui/Story.kt','ui/home/CityStories.kt','ui/map/MapPlaces.kt','ui/sos/SosContent.kt'];
+const paths=['ui/guide/GuideContent.kt','ui/guide/ProvidedGuideContent.kt','ui/guide/GuideCollectionContent.kt','ui/guide/ArticleServiceLinks.kt','ui/atlas/AtlasContent.kt','ui/atlas/ExpandedAtlasContent.kt','ui/atlas/DetailedAtlasContent.kt','ui/atlas/AtlasSystems.kt','ui/guide/RoadsideContent.kt','ui/atlas/AtlasCarModel.kt','ui/garage/GarageModels.kt','ui/garage/GarageCatalog.kt','ui/garage/GarageAdvice.kt','ui/services/ServiceCatalog.kt','ui/services/ServiceCategoryArt.kt','ui/entry/EntryPolicy.kt','ui/Story.kt','ui/home/CityStories.kt','ui/map/MapPlaces.kt','ui/sos/SosContent.kt'];
 const resources=new Map();
 const homeAssetNames=['home_guide_art_v1','home_services_art_v1','home_products_art_v1','home_fines_art_v1','home_community_art_v1','launcher_mark_v1','guide_anatomy_art_v1','polish_symptoms_art_v1','polish_location_art_v1','guide_diagnosis_art_v1','polish_urgency_art_v1','guide_care_art_v1','guide_tips_art_v1'];
 for(const name of homeAssetNames)resources.set(name,resources.size+1);
@@ -13,7 +13,7 @@ let indicators=await readFile(join(base,'ui/indicators/IndicatorsScreen.kt'),'ut
 for(const m of indicators.matchAll(/R\.drawable\.(\w+)/g))if(!resources.has(m[1]))resources.set(m[1],resources.size+1);
 await writeFile(join(temp,'IndicatorsContent.kt'),indicators);
 const collectionSource=await readFile(join(base,'ui/guide/GuideCollectionScreen.kt'),'utf8');
-const collectionPure='package com.example.mycar.ui.guide\nimport com.example.mycar.R\n'+collectionSource.slice(collectionSource.indexOf('internal enum class GuideCollection'),collectionSource.indexOf('@Composable'));
+const collectionPure='package com.example.mycar.ui.guide\nimport com.example.mycar.R\nimport java.util.Locale\n'+collectionSource.slice(collectionSource.indexOf('internal enum class GuideCollection'),collectionSource.indexOf('@Composable'));
 for(const m of collectionPure.matchAll(/R\.drawable\.(\w+)/g))if(!resources.has(m[1]))resources.set(m[1],resources.size+1);
 await writeFile(join(temp,'Collections.kt'),collectionPure);
 await writeFile(join(temp,'R.kt'),'package com.example.mycar\nobject R { object drawable {\n'+[...resources].map(([n,i])=>`const val ${n} = ${i}`).join('\n')+'\n}}');
@@ -32,7 +32,7 @@ fun main(args:Array<String>) {
  "articles" to guideArticles.map { mapOf("article" to it,"services" to relatedServiceCategories(it.id).map { c->c.id }) },
  "sections" to GuideSection.entries.map { mapOf("id" to it.name,"title" to it.title,"subtitle" to it.subtitle) },
  "urgencies" to GuideUrgency.entries.associate { it.name to it.label },
- "zones" to atlasZones,"parts" to atlasParts,"vehicles" to garageCatalog,
+ "systems" to atlasSystems,"roadside" to roadsideScenarios,"zones" to atlasZones,"parts" to atlasParts,"vehicles" to garageCatalog,
  "serviceCategories" to ServiceCategory.entries.map { mapOf("id" to it.id,"name" to it.name,"title" to it.title,"summary" to it.summary,"image" to it.imageRes,"art" to serviceCategoryArt(it)) },
  "companies" to serviceCompanies,"places" to mapPlaces,"stories" to homeStories,"sos" to sosTopics,
  "indicators" to indicatorCategories,"advice" to advice,
